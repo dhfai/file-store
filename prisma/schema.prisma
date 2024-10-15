@@ -16,5 +16,6 @@ model File {
   fileName  String
   nomorSurat String
   jenisSurat String
+  tanggalDibuat DateTime
   createdAt DateTime @default(now())
 }
