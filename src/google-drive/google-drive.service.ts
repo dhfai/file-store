@@ -1,8 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { google } from 'googleapis';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { parseISO } from 'date-fns';
 
 @Injectable()
 export class GoogleDriveService {
@@ -32,6 +34,8 @@ export class GoogleDriveService {
     filePath: string,
     nomorSurat: string,
     jenisSurat: string,
+    tanggalDibuat: string,
+    user: any,
   ) {
     console.log(`Uploading file: ${fileName} from path: ${filePath}`);
 
@@ -57,6 +61,8 @@ export class GoogleDriveService {
       // Make the file public
       await this.setFilePublic(fileId);
 
+      const tanggalDibuatDate = parseISO(tanggalDibuat);
+
       // Store file metadata in the database
       await this.prisma.file.create({
         data: {
@@ -64,6 +70,8 @@ export class GoogleDriveService {
           fileName: fileName,
           nomorSurat: nomorSurat,
           jenisSurat: jenisSurat,
+          tanggalDibuat: tanggalDibuatDate,
+          userId: user.id,
         },
       });
 
@@ -83,15 +91,14 @@ export class GoogleDriveService {
     }
   }
 
-
   async listAllFIles() {
     try {
-        const files = await this.prisma.file.findMany();
-        return files;
-      } catch (error) {
-        console.error('Error retrieving file list:', error.message);
-        throw new InternalServerErrorException('Error retrieving file list');
-      }
+      const files = await this.prisma.file.findMany();
+      return files;
+    } catch (error) {
+      console.error('Error retrieving file list:', error.message);
+      throw new InternalServerErrorException('Error retrieving file list');
+    }
   }
 
   async setFilePublic(fileId: string): Promise<void> {
@@ -120,7 +127,6 @@ export class GoogleDriveService {
     }
   }
 
-
   async getFileMetadata(fileId: string): Promise<any> {
     try {
       const response = await this.driveClient.files.get({
@@ -136,7 +142,6 @@ export class GoogleDriveService {
       );
     }
   }
-
 
   async downloadFile(fileId: string): Promise<any> {
     try {
@@ -157,10 +162,10 @@ export class GoogleDriveService {
     }
   }
 
-
   async shareFileWithUser(fileId: string, email?: string) {
     try {
-      const emailAddress = email || this.configService.get<string>('SHARE_WITH_EMAIL');
+      const emailAddress =
+        email || this.configService.get<string>('SHARE_WITH_EMAIL');
 
       if (!emailAddress) {
         throw new InternalServerErrorException('No email address provided');
