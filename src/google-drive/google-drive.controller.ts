@@ -9,6 +9,8 @@ import {
   Param,
   Res,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -16,8 +18,10 @@ import { GoogleDriveService } from './google-drive.service';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtAuthGuard } from 'src/auth/guard/jwt.guard';
 
 @Controller()
+@UseGuards(JwtAuthGuard)
 export class GoogleDriveController {
   constructor(private readonly googleDriveService: GoogleDriveService) {}
 
@@ -36,6 +40,7 @@ export class GoogleDriveController {
     }),
   )
   async uploadFile(
+    @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
     @Body('fileName') fileName?: string,
     @Body('nomorSurat') nomorSurat?: string,
@@ -57,6 +62,7 @@ export class GoogleDriveController {
       nomorSurat,
       jenisSurat,
       tanggalDibuat,
+      req.user,
     );
   }
 

@@ -35,6 +35,7 @@ export class GoogleDriveService {
     nomorSurat: string,
     jenisSurat: string,
     tanggalDibuat: string,
+    user: any,
   ) {
     console.log(`Uploading file: ${fileName} from path: ${filePath}`);
 
@@ -70,6 +71,7 @@ export class GoogleDriveService {
           nomorSurat: nomorSurat,
           jenisSurat: jenisSurat,
           tanggalDibuat: tanggalDibuatDate,
+          userId: user.id,
         },
       });
 
